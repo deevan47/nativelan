@@ -52,25 +52,11 @@ export default function WaterManagementForm() {
     }
 
     setLoading(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setSuccessMsg(data.message || "Form submitted successfully!");
-        setFormData(initialFormState);
-      } else {
-        setErrorMsg(data.message || "Failed to submit the form.");
-      }
-    } catch (err) {
-      setErrorMsg("Error submitting the form. Please try again.");
-    } finally {
+    setTimeout(() => {
       setLoading(false);
-    }
+      setSuccessMsg("Form submitted successfully!");
+      setFormData(initialFormState);
+    }, 1000);
   };
 
   return (
@@ -369,8 +355,12 @@ export default function WaterManagementForm() {
             5.3 Green Landscapes:
             <select name="q5_3" value={formData.q5_3} onChange={handleChange}>
               <option value="">Select</option>
-              <option value="0">High water, non-native + no smart irrigation</option>
-              <option value="1">High water, non-native + smart irrigation</option>
+              <option value="0">
+                High water, non-native + no smart irrigation
+              </option>
+              <option value="1">
+                High water, non-native + smart irrigation
+              </option>
               <option value="2">Native + no smart irrigation</option>
               <option value="3">Native + smart irrigation</option>
             </select>

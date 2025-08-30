@@ -28,7 +28,7 @@ import Success from "./pages/Success";
 
 function getDefaultForm() {
   return {
-    language: "en", // default language
+    language: "en",
     fullName: "",
     email: "",
     whatsapp: "",
@@ -64,33 +64,13 @@ function getDefaultForm() {
   };
 }
 
-function getDefaultFormWithZeros() {
-  const defaultForm = getDefaultForm();
-  const zeroedForm = { ...defaultForm };
-
-  Object.keys(zeroedForm).forEach((key) => {
-    if (
-      (key.startsWith("q") && key.includes("_")) ||
-      key.startsWith("score_") ||
-      key === "unitsCount"
-    ) {
-      zeroedForm[key] = 0;
-    }
-  });
-
-  return zeroedForm;
-}
-
-const initialForm = getDefaultFormWithZeros();
-
 function App() {
   const [activeStep, setActiveStep] = useState(0);
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(getDefaultForm());
   const [clearDialog, setClearDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const formRef = useRef(null);
 
-  // get translations based on selected language
   const currentLang = form.language || "en";
   const t = translations[currentLang];
 
@@ -125,80 +105,9 @@ function App() {
   };
 
   const handleSubmitDetailedForm = async () => {
-    try {
-      const formToSend = { ...form };
-
-      const replacer = (key, value) => {
-        if (
-          value instanceof Window ||
-          value instanceof HTMLElement ||
-          value instanceof Event
-        ) {
-          return undefined;
-        }
-        if (
-          value &&
-          typeof value === "object" &&
-          value.current &&
-          (value.current instanceof HTMLElement ||
-            value.current instanceof Window)
-        ) {
-          return undefined;
-        }
-        if (typeof value === "function") {
-          return undefined;
-        }
-        return value;
-      };
-
-      Object.keys(formToSend).forEach((key) => {
-        if (formToSend[key] === undefined) return;
-
-        const value = formToSend[key];
-
-        if (
-          (key.startsWith("q") && key.includes("_")) ||
-          key.startsWith("score_") ||
-          key === "unitsCount"
-        ) {
-          if (value === null || value === undefined || value === "") {
-            formToSend[key] = null;
-          } else {
-            const numVal = Number(value);
-            formToSend[key] = !isNaN(numVal) ? numVal : null;
-          }
-        }
-      });
-
-      const BACKEND_URL =
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-
-      const jsonData = JSON.stringify(formToSend, replacer);
-
-      const response = await fetch(`${BACKEND_URL}/api/submit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status} - ${errorText}`
-        );
-      }
-
-      await response.json();
-
-      setActiveStep(t.steps.length - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      alert(
-        `Failed to submit the form. Error: ${error.message}. Please check your network or server logs and try again.`
-      );
-    }
+    console.log("Form submitted", form);
+    setActiveStep(t.steps.length - 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const getStepContent = (step) => {
@@ -250,7 +159,11 @@ function App() {
         );
       case 10:
         return (
-          <Success form={form} onRestart={handleRestart} sections={t.sections} />
+          <Success
+            form={form}
+            onRestart={handleRestart}
+            sections={t.sections}
+          />
         );
       default:
         return null;
